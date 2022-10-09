@@ -21,21 +21,16 @@ const analysis= async ()=> {
     if(amountsEarned[x.driverID]) amountsEarned[x.driverID] += amount;
     else amountsEarned[x.driverID]= amount;
   })
-  let eachDriver= Array.from(new Set(drivers));
+  let eachDriver= [...new Set(drivers)];
   for(x of eachDriver){
     try {
       let DriverDetails= await(getDriver(x));
       if(DriverDetails.vehicleID.length>1) noOfDriversWithMoreThanOneVehicle++
     } catch (error) {
       continue
-    }
-  }
-  result['noOfCashTrips']= noOfCashTrips;
-  result['noOfNonCashTrips']= data.length-noOfCashTrips;
-  result['billedTotal']= totalAmount.toFixed(2);
-  result['cashBilledTotal']= cashBilledTotal.toFixed(2);
-  result['noOfDriversWithMoreThanOneVehicle']= noOfDriversWithMoreThanOneVehicle
-  result['nonCashBilledTotal']= totalAmount- cashBilledTotal.toFixed(2);
+    }};
+  result= {noOfCashTrips: noOfCashTrips, noOfNonCashTrips:data.length-noOfCashTrips, billedTotal:totalAmount.toFixed(2),cashBilledTotal:cashBilledTotal.toFixed(2),
+          noOfDriversWithMoreThanOneVehicle:noOfDriversWithMoreThanOneVehicle,nonCashBilledTotal:totalAmount- cashBilledTotal.toFixed(2)}
   let mostTripsDriver= getMostTripsDriverId(drivers);
   result['mostTripsByDriver']= getDriverDetails(await(getDriver(mostTripsDriver.driverId)), mostTripsDriver.driverId,mostTripsDriver.noOfTrips, amountsEarned);
   highestEarner= getHighestEarningDriver(amountsEarned);
@@ -44,8 +39,6 @@ const analysis= async ()=> {
   result['highestEarningDriver'].totalEarned= highestEarner.amount;
   return result
 }
-
-
 const getHighestEarningDriver=  (amountsEarned)=>{
   let highestEarnerId;
   let highestAmount=0
@@ -53,10 +46,8 @@ const getHighestEarningDriver=  (amountsEarned)=>{
     if (amountsEarned[x] > highestAmount){
       highestEarnerId= x;
       highestAmount= amountsEarned[x];
-    }
-  })
-  return {driverId:highestEarnerId, amount:highestAmount}
-  };
+    }})
+  return {driverId:highestEarnerId, amount:highestAmount}};
   const getTripsObj= (drivers)=>{
     let tripsObj= {};
     drivers.forEach((x)=> {
@@ -69,7 +60,6 @@ const getHighestEarningDriver=  (amountsEarned)=>{
     let tripsCount=getTripsObj(drivers)
     return {driverId:Object.keys(tripsCount).sort((a,b)=> tripsCount[b]-tripsCount[a])[0], noOfTrips:tripsCount[Object.keys(tripsCount).sort((a,b)=> tripsCount[b]-tripsCount[a])[0]]};
   }
-
   const getDriverDetails= (driverObj, driverId, noOfTrips, amountsEarned)=> ({name: driverObj.name, email: driverObj.email, phone:driverObj.phone, noOfTrips:noOfTrips, totalEarned: amountsEarned[driverId]});
 
-// module.exports = analysis;
+module.exports = analysis;
