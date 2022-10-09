@@ -1,4 +1,4 @@
-const { getTrips } = require('api');
+const { getTrips, getDriver, getVehicle } = require('api');
 
 /**
  * This function should return the data for drivers in the specified format
@@ -9,6 +9,7 @@ const { getTrips } = require('api');
  */
 async function driverReport() {
   // Your code goes here
+  
 }
 
 module.exports = driverReport;
