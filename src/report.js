@@ -12,32 +12,67 @@ const { getTrips, getDriver, getVehicle } = require('api');
 const driverReport= (async()=> {
   // Your code goes here
   let data= await(getTrips());
-  let driverObjbyTrips= addTripsDetails(data);
-  let [arrayOfDriverId, arrayOfVehicleId, vehicleDetails]=[[], [], {}]
-  for(x of data){
-    if(!arrayOfDriverId.includes(x.driverID)) arrayOfDriverId.push(x.driverID)
+  let result= addTripsDetails(data);
+  let [arrayOfDriverId, arrayOfVehicleId, arrayOfVehicleDetails, arrayOfDriverDetails]=[[], [], [], []]
+  for(let x of data){
+    if(!arrayOfDriverId.includes(x.driverID)) arrayOfDriverId.push(x.driverID);
   }
-  for (x of arrayOfDriverId){
-    try {
-      let driverDetails= await(getDriver(x));
-      driverObjbyTrips[x].fullName= driverDetails.name;
-      driverObjbyTrips[x].phone= driverDetails.phone;
-      // let vehicle= await(getVehicle(...driverDetails.vehicleID));
-      driverObjbyTrips[x].vehicles= [...driverDetails.vehicleID];
-      
-      // driverObjbyTrips[x].vehicles=(await(getVehicle(...driverDetails.vehicleID)))
-      // arrayOfVehicleId.push([x,...driverDetails.vehicleID]);
-      // console.log(vehicle)
-    } catch (error) {
-      continue;
+  let arrayOfGetDrivers= arrayOfDriverId.map(x=> getDriver(x));
+  const gotDrivers = await Promise.allSettled(arrayOfGetDrivers);
+  const driversDetailsObj= createMap(arrayOfDriverId, gotDrivers);
+  arrayOfDriverDetails.forEach(x=> arrayOfVehicleId.push(...x.vehicleID));
+  for (let x of Object.keys(driversDetailsObj)){
+    arrayOfVehicleId.push(...driversDetailsObj[x].vehicleID)
+  }
+  let arrayOfGetVehicles= arrayOfVehicleId.map(x=> getVehicle(x));
+  const gotVehicles = await Promise.allSettled(arrayOfGetVehicles);
+  for (let i=0; i<arrayOfVehicleId.length; i++){
+    if (gotVehicles[i].status== 'rejected'){
+      gotVehicles=gotVehicles.slice(0,i).concat(gotVehicles(i+1));
+      arrayOfVehicleId=arrayOfVehicleId.slice(0,i).concat(arrayOfVehicleId(i+1));
     }
-    Promise.all(await(getDriver(...arrayOfDriverId))).then((values) => {
-      console.log(values);
-    });
+  }
+  const neededVehicleDetails= extractVehicle(gotVehicles)
+  const vehicleDetailsObj= createMap(arrayOfVehicleId, neededVehicleDetails);
+  Object.keys(driversDetailsObj).forEach((x,i)=>{
+    result[x].fullName= driversDetailsObj[x].name;
+    result[x].phone= driversDetailsObj[x].phone;
+    result[x].vehicles=  driversDetailsObj[x].vehicleID;
+    result[x].noOfVehicles=  driversDetailsObj[x].vehicleID.length;
+  })
+  
+  console.log(driversDetailsObj);
+
+
+
+  // const addDriverDetails= (result, array)=>{
+  //   for(let i=0; i< ){
+  //     result
+  //   }
+  // }
+  
+
+
+
+  // for (let x of arrayOfDriverId){
+  //   try {
+  //     let driverDetails= await(getDriver(x));
+  //     driverObjbyTrips[x].fullName= driverDetails.name;
+  //     driverObjbyTrips[x].phone= driverDetails.phone;
+  //     // let vehicle= await(getVehicle(...driverDetails.vehicleID));
+  //     // driverObjbyTrips[x].vehicles= [...driverDetails.vehicleID];
+      
+  //     // driverObjbyTrips[x].vehicles=(await(getVehicle(...driverDetails.vehicleID)))
+  //     // arrayOfVehicleId.push([x,...driverDetails.vehicleID]);
+  //     // console.log(vehicle)
+  //   } catch (error) {
+  //     continue;
+  //   }
+ 
     // driverObjbyTrips[x].vehicles= driverObjbyTrips[x].vehicles.map((y,j)=>{
     //   return await(getVehicle(y))
     // });
-  }
+  // }
 
   // for (x of arrayOfVehicleId){
   //   try {
@@ -57,6 +92,18 @@ const driverReport= (async()=> {
 
 
 //fullname   phone     vehicles
+
+const createMap= (keyObj, valueObj)=>{
+  let mapObj= {};
+  for(let i=0; i<keyObj.length; i++){
+    if(valueObj[i].status== 'fulfilled'){
+    mapObj[keyObj[i]]= valueObj[i].value;}
+    else if(!valueObj[i].status){
+      mapObj[keyObj[i]]= valueObj[i];
+    }}
+  return mapObj
+}
+
 
 const addTripsDetails= (data)=>{
   let driverObjbyTrips={};
@@ -86,4 +133,11 @@ const addTripsDetails= (data)=>{
   }
   return driverObjbyTrips;
 }
-module.exports = driverReport;
+const extractVehicle= (gotVehicles)=>{
+  let result=[];
+  gotVehicles.forEach(x=> {
+    result.push({manufacturer:x.value.manufacturer, plate: x.value.plate})
+  })
+  return result;
+}
+// module.exports = driverReport;
