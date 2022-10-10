@@ -9,7 +9,7 @@ const { getTrips, getDriver, getVehicle } = require('api');
  */
 
 
-const driverReport= (async()=> {
+const driverReport= async()=> {
   // Your code goes here
   let data= await(getTrips());
   let result= addTripsDetails(data);
@@ -35,63 +35,17 @@ const driverReport= (async()=> {
   const neededVehicleDetails= extractVehicle(gotVehicles)
   const vehicleDetailsObj= createMap(arrayOfVehicleId, neededVehicleDetails);
   Object.keys(driversDetailsObj).forEach((x,i)=>{
+    driversDetailsObj[x].vehicleID.forEach((y,j)=>{
+      driversDetailsObj[x].vehicleID[j]= vehicleDetailsObj[driversDetailsObj[x].vehicleID[j]]
+    })
     result[x].fullName= driversDetailsObj[x].name;
     result[x].phone= driversDetailsObj[x].phone;
     result[x].vehicles=  driversDetailsObj[x].vehicleID;
     result[x].noOfVehicles=  driversDetailsObj[x].vehicleID.length;
   })
   
-  console.log(driversDetailsObj);
-
-
-
-  // const addDriverDetails= (result, array)=>{
-  //   for(let i=0; i< ){
-  //     result
-  //   }
-  // }
-  
-
-
-
-  // for (let x of arrayOfDriverId){
-  //   try {
-  //     let driverDetails= await(getDriver(x));
-  //     driverObjbyTrips[x].fullName= driverDetails.name;
-  //     driverObjbyTrips[x].phone= driverDetails.phone;
-  //     // let vehicle= await(getVehicle(...driverDetails.vehicleID));
-  //     // driverObjbyTrips[x].vehicles= [...driverDetails.vehicleID];
-      
-  //     // driverObjbyTrips[x].vehicles=(await(getVehicle(...driverDetails.vehicleID)))
-  //     // arrayOfVehicleId.push([x,...driverDetails.vehicleID]);
-  //     // console.log(vehicle)
-  //   } catch (error) {
-  //     continue;
-  //   }
- 
-    // driverObjbyTrips[x].vehicles= driverObjbyTrips[x].vehicles.map((y,j)=>{
-    //   return await(getVehicle(y))
-    // });
-  // }
-
-  // for (x of arrayOfVehicleId){
-  //   try {
-  //     let vehicle= await(getVehicle(x));
-  //     vehicleDetails[x]= {'plate':vehicle.plate, 'manufacturer':vehicle.manufacturer, }
-  //   } catch (error) {
-  //     continue;
-  //   }
-  // }
-  
-  // console.log(driverObjbyTrips['3539a692-69b6-4b24-89fc-f8b505a1eecd']);
-  // let result=[addDriverDetails(data, driverObjbyTrips)];
-  // console.log(arrayOfVehicleId)
-  
-  // console.log(driverObjbyTrips['6abbc78e-87d8-4def-a722-bd19b70e9639']);
-})()
-
-
-//fullname   phone     vehicles
+  return (result);
+}
 
 const createMap= (keyObj, valueObj)=>{
   let mapObj= {};
@@ -140,4 +94,4 @@ const extractVehicle= (gotVehicles)=>{
   })
   return result;
 }
-// module.exports = driverReport;
+module.exports = driverReport;

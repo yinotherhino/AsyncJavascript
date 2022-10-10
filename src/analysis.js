@@ -1,4 +1,4 @@
-const { getTrips, getVehicle, getDriver } = require('api');
+const { getTrips, getDriver } = require('api');
 
 /**
  * This function should return the trip data analysis
@@ -6,7 +6,7 @@ const { getTrips, getVehicle, getDriver } = require('api');
  * Question 3
  * @returns {any} Trip data analysis
  */
-const analysis= (async ()=> {
+const analysis= async ()=> {
   // Your code goes here
   let [result,totalAmount,noOfCashTrips,cashBilledTotal, drivers,amountsEarned, noOfDriversWithMoreThanOneVehicle, driversObj]= [{},0,0,0, [], {}, 0, []];
   let data= await(getTrips());
@@ -37,7 +37,7 @@ const analysis= (async ()=> {
   result['highestEarningDriver']= getDriverDetails(await(getDriver(highestEarner.driverId)), highestEarner.driverId, tripsObj[highestEarner.driverId], 0)
   result['highestEarningDriver'].totalAmountEarned= highestEarner.amount;
   return result;
-})()
+}
 
 const getHighestEarningDriver=  (amountsEarned)=>{
   let highestEarnerId;
